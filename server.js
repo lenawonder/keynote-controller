@@ -4,6 +4,42 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 
+// Add scripts to keynote files if they don't already exist
+var fs = require('fs');
+var originalString = fs.readFileSync(__dirname + '/public/assets/player/KeynoteDHTMLPlayer.html').toString();
+var found = false;
+if (originalString.indexOf('socket.io.js') != -1) {
+  found = true;
+}
+console.log(found);
+
+if (!found) {
+  var pos = originalString.indexOf('</script>') + 9;
+  var jsCode = '\n\n<!-- My Scripts -->\n<script src="/socket.io/socket.io.js"></script>\n<script src="../../js/fallback_presentation.js"></script>\n<!-- End My Scripts -->\n\n';
+  var newString = originalString.slice(0,pos) + jsCode + originalString.slice(pos+1);
+  fs.writeFile(__dirname + '/public/assets/player/KeynoteDHTMLPlayer.html', newString, function(err) {
+    if(err) { throw err; }
+  });
+}
+
+var originalFallbackString = fs.readFileSync(__dirname + '/public/assets/fallback/index.html').toString();
+found = false;
+if (originalFallbackString.indexOf('socket.io.js') != -1) {
+  found = true;
+}
+console.log(found);
+
+if (!found) {
+  var pos = originalFallbackString.indexOf('</script>') + 9;
+  var jsCode = '\n\n<!-- My Scripts -->\n<script src="/socket.io/socket.io.js"></script>\n<script src="../../js/fallback_presentation.js"></script>\n<!-- End My Scripts -->\n\n';
+  var newString = originalFallbackString.slice(0,pos) + jsCode + originalFallbackString.slice(pos+1);
+  fs.writeFile(__dirname + '/public/assets/fallback/index.html', newString, function(err) {
+    if(err) { throw err; }
+  });
+}
+
+
+
 var sockets = [];
 var masterSocket = null;
 
