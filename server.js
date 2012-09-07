@@ -1,45 +1,59 @@
 var os = require('os');
 var express = require('express');
+var ejs = require('ejs');
+var fs = require('fs');
+var child_process = require('child_process');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 
-// Add scripts to keynote files if they don't already exist
-var fs = require('fs');
-var originalString = fs.readFileSync(__dirname + '/public/assets/player/KeynoteDHTMLPlayer.html').toString();
-var found = false;
-if (originalString.indexOf('socket.io.js') != -1) {
-  found = true;
-}
-console.log(found);
-
-if (!found) {
-  var pos = originalString.indexOf('</script>') + 9;
-  var jsCode = '\n\n<!-- My Scripts -->\n<script src="/socket.io/socket.io.js"></script>\n<script src="../../js/fallback_presentation.js"></script>\n<!-- End My Scripts -->\n\n';
-  var newString = originalString.slice(0,pos) + jsCode + originalString.slice(pos+1);
-  fs.writeFile(__dirname + '/public/assets/player/KeynoteDHTMLPlayer.html', newString, function(err) {
-    if(err) { throw err; }
-  });
-}
-
-var originalFallbackString = fs.readFileSync(__dirname + '/public/assets/fallback/index.html').toString();
-found = false;
-if (originalFallbackString.indexOf('socket.io.js') != -1) {
-  found = true;
-}
-console.log(found);
-
-if (!found) {
-  var pos = originalFallbackString.indexOf('</script>') + 9;
-  var jsCode = '\n\n<!-- My Scripts -->\n<script src="/socket.io/socket.io.js"></script>\n<script src="../../js/fallback_presentation.js"></script>\n<!-- End My Scripts -->\n\n';
-  var newString = originalFallbackString.slice(0,pos) + jsCode + originalFallbackString.slice(pos+1);
-  fs.writeFile(__dirname + '/public/assets/fallback/index.html', newString, function(err) {
-    if(err) { throw err; }
-  });
+var findLocalAddress = function() {
+  var interfaces = os.networkInterfaces();
+  var en1 = interfaces.en1 || interfaces.en0;
+  for (var i = 0, l = en1.length; i < l; i++) {
+    if (en1[i].family === 'IPv4') {
+      return en1[i].address;
+    }
+  }
 }
 
 
+// Check for keynote files
+if (!fs.existsSync(__dirname + "/public/index.html")) { 
+  console.log("Presentation not found in public directory, using test");
+  child_process.exec("cp -R test_pres/* public/.");
+}
 
+
+// Write presentation javascript files
+var ejsFile = fs.readFileSync(__dirname + '/presentation.ejs').toString();
+var writeJs = function(dest, options) {
+  options.address = findLocalAddress();
+
+  var rendered = ejs.render(ejsFile, options);
+  var jsDir = __dirname + '/public/js/';
+  fs.mkdir(jsDir);
+  fs.writeFile(jsDir + dest, rendered, function(err) { if(err) { throw err; } });
+};
+writeJs('fallback_presentation.js', { 
+  nextFunction: 'handleHudNext()',
+  prevFunction: 'handleHudPrevious()' 
+});
+writeJs('presentation.js', { 
+  nextFunction: 'gShowController.advanceToNextBuild("tapNextButton")',
+  prevFunction: 'gShowController.goBackToPreviousSlide("tapPreviousButton")' 
+});
+
+
+// Patch keynote files
+function puts(error, stdout, stderr) { 
+  var sys = require('sys')
+  if (stdout.indexOf('Skipping patch') == -1) sys.puts(stdout);
+}
+child_process.exec("patch -Np0 < keynote.patch", puts);
+
+
+// Server
 var sockets = [];
 var masterSocket = null;
 
@@ -80,14 +94,6 @@ var removeSocket = function (socket) {
   }
 };
 
-var findLocalAddress = function() {
-  var en1 = os.networkInterfaces().en1;
-  for (var i = 0, l = en1.length; i < l; i++) {
-    if (en1[i].family === 'IPv4') {
-      return en1[i].address;
-    }
-  }
-}
 
 io.sockets.on('connection', function (socket) {
   addSocket(socket);

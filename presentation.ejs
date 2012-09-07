@@ -1,14 +1,14 @@
 console.log(io);
 if (window.io) {
-  var socket = io.connect('http://192.168.13.170:3000');
+var socket = io.connect('http://<%= address %>:3000');
 
   socket.on('next', function (stepId) {
-    gShowController.advanceToNextBuild('tapNextButton');
+    <%= nextFunction %>;
   });
 
 
   socket.on('prev', function (stepId) {
-    gShowController.goBackToPreviousSlide('tapPreviousButton');
+    <%= prevFunction %>;
   });
 
   document.onkeydown = function(e) {
