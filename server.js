@@ -1,7 +1,8 @@
 var os = require('os');
 var express = require('express');
-var app = express.createServer();
-var io = require('socket.io').listen(app);
+var app = express();
+var server = require('http').createServer(app);
+var io = require('socket.io').listen(server);
 
 var sockets = [];
 var masterSocket = null;
@@ -10,7 +11,7 @@ app.configure(function() {
   app.use(express.static(__dirname + '/public'));
 });
 
-app.listen(3000);
+server.listen(3000);
 
 var broadcast = function(event, data, ignoreSocket) {
   for (var i = 0, l = sockets.length; i < l; i++) {
