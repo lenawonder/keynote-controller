@@ -35,4 +35,8 @@ var socket = io.connect('http://<%= address %>:3000');
         break;
     }
   };
+
+  document.observe("mousedown", function (event) {
+    socket.emit('next', <%= nextCall %>-1);
+  });
 }

@@ -44,8 +44,8 @@ writeJs('fallback_presentation.js', {
 writeJs('presentation.js', { 
   nextFunction: 'gShowController.jumpToScene(parseInt(pos))',
   prevFunction: 'gShowController.jumpToScene(parseInt(pos))',
-  nextCall: 'gShowController.nextSceneIndex',
-  prevCall: 'gShowController.currentSceneIndex'
+  nextCall: 'gShowController.sceneIndexOfPrebuiltAnimations+1',
+  prevCall: 'gShowController.sceneIndexOfPrebuiltAnimations-1'
 });
 
 
