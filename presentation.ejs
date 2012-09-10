@@ -19,10 +19,21 @@ var socket = io.connect('http://<%= address %>:3000');
       key = e.keyCode;
     }
 
-    if (key == 39) {
-      socket.emit('next', <%= nextCall %>);
-    } else if (key == 37) {
-      socket.emit('prev', <%= prevCall %>);
+    switch (key) {
+      case 32:
+        // Space
+        socket.emit('next', <%= nextCall %>);
+        break;        
+      case 37:
+        // Left arrow
+        socket.emit('prev', <%= prevCall %>);
+        break;
+      case 39:
+        // Right arrow
+        socket.emit('next', <%= nextCall %>);
+        break;
+      default:
+        break;
     }
   };
 }
