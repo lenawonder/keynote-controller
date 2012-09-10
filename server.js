@@ -36,12 +36,16 @@ var writeJs = function(dest, options) {
   fs.writeFile(jsDir + dest, rendered, function(err) { if(err) { throw err; } });
 };
 writeJs('fallback_presentation.js', { 
-  nextFunction: 'handleHudNext()',
-  prevFunction: 'handleHudPrevious()' 
+  nextFunction: 'setPlayheadByEventTimeline(parseInt(pos)+1, true); loadEventTimeline(parseInt(pos), true)',
+  prevFunction: 'setPlayheadByEventTimeline(parseInt(pos)+1, true); loadEventTimeline(parseInt(pos), true)',
+  nextCall: 'currentEventTimeline+1',
+  prevCall: 'currentEventTimeline-1'
 });
 writeJs('presentation.js', { 
-  nextFunction: 'gShowController.advanceToNextBuild("tapNextButton")',
-  prevFunction: 'gShowController.goBackToPreviousSlide("tapPreviousButton")' 
+  nextFunction: 'gShowController.jumpToScene(parseInt(pos))',
+  prevFunction: 'gShowController.jumpToScene(parseInt(pos))',
+  nextCall: 'gShowController.nextSceneIndex',
+  prevCall: 'gShowController.currentSceneIndex'
 });
 
 
@@ -94,20 +98,19 @@ var removeSocket = function (socket) {
   }
 };
 
-
 io.sockets.on('connection', function (socket) {
   addSocket(socket);
-  socket.on('next', function (stepId) {
+  socket.on('next', function (pos) {
     if (socket === masterSocket) {
-      console.log('next call from master');
-      broadcast('next', stepId, masterSocket);
+      console.log('next call from master at', pos.slice(1, pos.length-1));
+      broadcast('next', pos.slice(1,pos.length-1), masterSocket);
     }
   });
 
-  socket.on('prev', function (stepId) {
+  socket.on('prev', function (pos) {
     if (socket === masterSocket) {
-      console.log('prev call from master');
-      broadcast('prev', stepId, masterSocket);
+      console.log('prev call from master at', pos.slice(1, pos.length-1));
+      broadcast('prev', pos.slice(1,pos.length-1), masterSocket);
     }
   });
 

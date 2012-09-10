@@ -1,13 +1,13 @@
-console.log(io);
 if (window.io) {
 var socket = io.connect('http://<%= address %>:3000');
 
-  socket.on('next', function (stepId) {
+  socket.on('next', function (pos) {
+    console.log(pos);
     <%= nextFunction %>;
   });
 
 
-  socket.on('prev', function (stepId) {
+  socket.on('prev', function (pos) {
     <%= prevFunction %>;
   });
 
@@ -18,10 +18,11 @@ var socket = io.connect('http://<%= address %>:3000');
     } else {
       key = e.keyCode;
     }
+
     if (key == 39) {
-      socket.emit('next');
+      socket.emit('next', <%= nextCall %>);
     } else if (key == 37) {
-      socket.emit('prev');
+      socket.emit('prev', <%= prevCall %>);
     }
   };
 }
