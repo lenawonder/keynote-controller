@@ -12,4 +12,4 @@ Run with
       node server
 
 
-The first client that connects to the server will be the controller. All clients that connect after that will be viewers. Currently only the left and right arrow keys are recognized as control events to be sent to the viewers (i.e. space bar will also advance the slides but won't advance all the viewers' slides).
+The first client that connects to the server will be the controller. All clients that connect after that will be viewers. Currently only the left arrow, right arrow and space bar keys are recognized as control events to be sent to the viewers (i.e. clicking the slide will also advance the slides but won't advance all the viewers' slides).

@@ -6,7 +6,6 @@ var socket = io.connect('http://<%= address %>:3000');
     <%= nextFunction %>;
   });
 
-
   socket.on('prev', function (pos) {
     <%= prevFunction %>;
   });
