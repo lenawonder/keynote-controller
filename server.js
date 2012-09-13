@@ -100,11 +100,13 @@ var removeSocket = function (socket) {
 
 io.sockets.on('connection', function (socket) {
   addSocket(socket);
+  console.log(sockets.length + " users connected");
   socket.on('next', function (pos) {
     if (socket === masterSocket) {
       console.log('next call from master at', pos.slice(1, pos.length-1));
       broadcast('next', pos.slice(1,pos.length-1), masterSocket);
     }
+    console.log(sockets.length + " users connected");
   });
 
   socket.on('prev', function (pos) {
@@ -112,12 +114,14 @@ io.sockets.on('connection', function (socket) {
       console.log('prev call from master at', pos.slice(1, pos.length-1));
       broadcast('prev', pos.slice(1,pos.length-1), masterSocket);
     }
+    console.log(sockets.length + " users connected");
   });
 
   socket.on('disconnect', function() {
     console.log('Socket disconnected');
     removeSocket(socket);
     broadcast('connections', sockets.length + 1); // need to include master socket
+    console.log(sockets.length + " users connected");
   });
   broadcast('connections', sockets.length + 1);
 });
